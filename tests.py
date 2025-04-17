@@ -113,8 +113,7 @@ class TestBooksCollector:
     def test_delete_book_from_favorites_non_existent_book_no_error(self):
         collector = BooksCollector()
         collector.delete_book_from_favorites('Несуществующая книга')
-        # Проверяем, что не возникло исключения
-        assert True
+        assert True  # Проверяем, что не возникло исключения
 
     def test_get_list_of_favorites_books_returns_all_favorites(self):
         collector = BooksCollector()
