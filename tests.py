@@ -1,125 +1,127 @@
 from main import BooksCollector
 
-
 class TestBooksCollector:
+    def setup(self):
+        """Инициализация коллектора перед каждым тестом"""
+        self.collector = BooksCollector()
+        # Подготовка тестовых данных
+        self.test_books = {
+            'Фантастическая книга': 'Фантастика',
+            'Ужастик': 'Ужасы', 
+            'Мультфильм': 'Мультфильмы',
+            'Комедия': 'Комедии',
+            'Книга без жанра': ''
+        }
+        for book, genre in self.test_books.items():
+            self.collector.add_new_book(book)
+            if genre:
+                self.collector.set_book_genre(book, genre)
 
+    # Тесты для add_new_book
     def test_add_new_book_add_two_books(self):
-        collector = BooksCollector()
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
-        assert len(collector.get_books_genre()) == 2
+        initial_count = len(self.collector.get_books_genre())
+        self.collector.add_new_book('Новая книга 1')
+        self.collector.add_new_book('Новая книга 2')
+        assert len(self.collector.get_books_genre()) == initial_count + 2
 
-    def test_add_new_book_name_length_40_chars_added_successfully(self):
-        collector = BooksCollector()
+    def test_add_new_book_name_length_40_chars_added(self):
         long_name = 'a' * 40
-        collector.add_new_book(long_name)
-        assert long_name in collector.get_books_genre()
+        self.collector.add_new_book(long_name)
+        assert long_name in self.collector.get_books_genre()
 
     def test_add_new_book_name_length_41_chars_not_added(self):
-        collector = BooksCollector()
         too_long_name = 'a' * 41
-        collector.add_new_book(too_long_name)
-        assert too_long_name not in collector.get_books_genre()
+        self.collector.add_new_book(too_long_name)
+        assert too_long_name not in self.collector.get_books_genre()
 
     def test_add_new_book_empty_name_not_added(self):
-        collector = BooksCollector()
-        collector.add_new_book('')
-        assert '' not in collector.get_books_genre()
+        self.collector.add_new_book('')
+        assert '' not in self.collector.get_books_genre()
 
     def test_add_new_book_duplicate_not_added(self):
-        collector = BooksCollector()
-        book_name = 'Книга'
-        collector.add_new_book(book_name)
-        collector.add_new_book(book_name)
-        assert len(collector.get_books_genre()) == 1
+        initial_count = len(self.collector.get_books_genre())
+        self.collector.add_new_book('Фантастическая книга')
+        assert len(self.collector.get_books_genre()) == initial_count
 
-    def test_set_book_genre_valid_genre_set_successfully(self):
-        collector = BooksCollector()
-        book_name = 'Книга'
-        genre = 'Фантастика'
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, genre)
-        assert collector.get_book_genre(book_name) == genre
+    # Тесты для set_book_genre
+    def test_set_book_genre_valid_genre(self):
+        self.collector.set_book_genre('Книга без жанра', 'Фантастика')
+        assert self.collector.get_book_genre('Книга без жанра') == 'Фантастика'
 
-    def test_set_book_genre_invalid_genre_not_set(self):
-        collector = BooksCollector()
-        book_name = 'Книга'
-        invalid_genre = 'Несуществующий жанр'
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, invalid_genre)
-        assert collector.get_book_genre(book_name) == ''
+    def test_set_book_genre_invalid_genre(self):
+        self.collector.set_book_genre('Фантастическая книга', 'Несуществующий жанр')
+        assert self.collector.get_book_genre('Фантастическая книга') == 'Фантастика'  # Жанр не изменился
 
-    def test_set_book_genre_nonexistent_book_genre_not_set(self):
-        collector = BooksCollector()
-        collector.set_book_genre('Несуществующая книга', 'Фантастика')
-        assert 'Несуществующая книга' not in collector.get_books_genre()
+    def test_set_book_genre_nonexistent_book(self):
+        initial_books = self.collector.get_books_genre()
+        self.collector.set_book_genre('Несуществующая книга', 'Фантастика')
+        assert self.collector.get_books_genre() == initial_books
 
-    def test_get_books_with_specific_genre_returns_correct_books(self):
-        collector = BooksCollector()
-        book1 = 'Фантастическая книга'
-        book2 = 'Еще фантастика'
-        genre = 'Фантастика'
-        collector.add_new_book(book1)
-        collector.add_new_book(book2)
-        collector.set_book_genre(book1, genre)
-        collector.set_book_genre(book2, genre)
-        books = collector.get_books_with_specific_genre(genre)
-        assert book1 in books and book2 in books and len(books) == 2
+    # Тесты для get_book_genre
+    def test_get_book_genre_existing_book_with_genre(self):
+        assert self.collector.get_book_genre('Фантастическая книга') == 'Фантастика'
 
-    def test_get_books_with_specific_genre_invalid_genre_returns_empty_list(self):
-        collector = BooksCollector()
-        books = collector.get_books_with_specific_genre('Несуществующий жанр')
+    def test_get_book_genre_existing_book_without_genre(self):
+        assert self.collector.get_book_genre('Книга без жанра') == ''
+
+    def test_get_book_genre_nonexistent_book(self):
+        assert self.collector.get_book_genre('Несуществующая книга') == ''
+
+    # Тесты для get_books_genre
+    def test_get_books_genre_returns_all_books(self):
+        books = self.collector.get_books_genre()
+        assert len(books) == len(self.test_books)
+        for book in self.test_books:
+            assert book in books
+
+    # Тесты для get_books_with_specific_genre
+    def test_get_books_with_specific_genre(self):
+        fantasy_books = self.collector.get_books_with_specific_genre('Фантастика')
+        assert len(fantasy_books) == 1
+        assert 'Фантастическая книга' in fantasy_books
+
+    def test_get_books_with_specific_genre_invalid_genre(self):
+        books = self.collector.get_books_with_specific_genre('Несуществующий жанр')
         assert books == []
 
-    def test_get_books_for_children_returns_only_child_friendly_books(self):
-        collector = BooksCollector()
-        child_book = 'Мультфильм'
-        adult_book = 'Ужастик'
-        collector.add_new_book(child_book)
-        collector.add_new_book(adult_book)
-        collector.set_book_genre(child_book, 'Мультфильмы')
-        collector.set_book_genre(adult_book, 'Ужасы')
-        children_books = collector.get_books_for_children()
-        assert child_book in children_books and adult_book not in children_books
+    # Тесты для get_books_for_children
+    def test_get_books_for_children(self):
+        children_books = self.collector.get_books_for_children()
+        assert 'Мультфильм' in children_books
+        assert 'Ужастик' not in children_books
+        assert 'Комедия' in children_books  # Предполагаем, что комедии подходят детям
 
-    def test_add_book_in_favorites_adds_only_existing_books(self):
-        collector = BooksCollector()
-        book = 'Книга'
-        collector.add_new_book(book)
-        collector.add_book_in_favorites(book)
-        assert book in collector.get_list_of_favorites_books()
+    # Тесты для работы с избранным
+    def test_add_book_in_favorites(self):
+        self.collector.add_book_in_favorites('Фантастическая книга')
+        assert 'Фантастическая книга' in self.collector.get_list_of_favorites_books()
 
-    def test_add_book_in_favorites_non_existent_book_not_added(self):
-        collector = BooksCollector()
-        collector.add_book_in_favorites('Несуществующая книга')
-        assert len(collector.get_list_of_favorites_books()) == 0
+    def test_add_non_existent_book_in_favorites(self):
+        initial_favorites = self.collector.get_list_of_favorites_books()
+        self.collector.add_book_in_favorites('Несуществующая книга')
+        assert self.collector.get_list_of_favorites_books() == initial_favorites
 
-    def test_add_book_in_favorites_duplicate_not_added(self):
-        collector = BooksCollector()
-        book = 'Книга'
-        collector.add_new_book(book)
-        collector.add_book_in_favorites(book)
-        collector.add_book_in_favorites(book)
-        assert len(collector.get_list_of_favorites_books()) == 1
+    def test_add_duplicate_book_in_favorites(self):
+        self.collector.add_book_in_favorites('Фантастическая книга')
+        initial_count = len(self.collector.get_list_of_favorites_books())
+        self.collector.add_book_in_favorites('Фантастическая книга')
+        assert len(self.collector.get_list_of_favorites_books()) == initial_count
 
-    def test_delete_book_from_favorites_removes_book(self):
-        collector = BooksCollector()
-        book = 'Книга'
-        collector.add_new_book(book)
-        collector.add_book_in_favorites(book)
-        collector.delete_book_from_favorites(book)
-        assert book not in collector.get_list_of_favorites_books()
+    def test_delete_book_from_favorites(self):
+        self.collector.add_book_in_favorites('Фантастическая книга')
+        self.collector.delete_book_from_favorites('Фантастическая книга')
+        assert 'Фантастическая книга' not in self.collector.get_list_of_favorites_books()
 
-    def test_delete_book_from_favorites_non_existent_book_no_error(self):
-        collector = BooksCollector()
-        collector.delete_book_from_favorites('Несуществующая книга')
-        assert True  # Проверяем, что не возникло исключения
+    def test_delete_non_existent_book_from_favorites(self):
+        initial_favorites = self.collector.get_list_of_favorites_books()
+        self.collector.delete_book_from_favorites('Несуществующая книга')
+        assert self.collector.get_list_of_favorites_books() == initial_favorites
 
-    def test_get_list_of_favorites_books_returns_all_favorites(self):
-        collector = BooksCollector()
-        books = ['Книга1', 'Книга2', 'Книга3']
-        for book in books:
-            collector.add_new_book(book)
-            collector.add_book_in_favorites(book)
-        favorites = collector.get_list_of_favorites_books()
-        assert all(book in favorites for book in books)
+    def test_get_list_of_favorites_books(self):
+        favorites = ['Фантастическая книга', 'Мультфильм']
+        for book in favorites:
+            self.collector.add_book_in_favorites(book)
+        result = self.collector.get_list_of_favorites_books()
+        assert len(result) == len(favorites)
+        for book in favorites:
+            assert book in result
